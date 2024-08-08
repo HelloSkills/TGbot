@@ -1,6 +1,4 @@
 // Соединяем бота
-
-
 require('dotenv').config();
 const { Bot, GrammyError, HttpError, Keyboard, InlineKeyboard } = require('grammy');
 const bot = new Bot(process.env.BOT_API_KEY);
@@ -14,6 +12,10 @@ bot.api.setMyCommands([
 		command: 'start',
 		description: 'Старт бота',
 	},
+	{
+		command: 'inline_keyboard',
+		description: 'Клавиатура',
+	}
 	// {
 	// 	command: 'support',
 	// 	description: 'Необходима помощь сотрудника тех. поддержки',
@@ -30,29 +32,25 @@ bot.api.setMyCommands([
 	// 	command: 'location',
 	// 	description: 'Отправить Вашу локацию',
 	// },
-	// {
-	// 	command: 'inline_keyboard',
-	// 	description: 'Клавиатура',
-	// }
 ])
 
 
 // Вешаем слушателя на конкретную команду тг
 
-// bot.command('start', async (ctx) => {
-// 	await ctx.react("❤")
-// 	await ctx.reply('<b>HelloSkillsWeb</b> приветствует Вас, выберите подходящую команду бота', {
-// 		parse_mode: 'HTML'
-// 	})
-// });
-
-
 bot.command('start', async (ctx) => {
 	await ctx.react("❤")
-	await ctx.reply('Бот запущен', {
+	await ctx.reply('<b>HelloSkillsWeb</b> приветствует Вас, выберите подходящую команду бота', {
 		parse_mode: 'HTML'
 	})
 });
+
+
+// bot.command('start', async (ctx) => {
+// 	await ctx.react("❤")
+// 	await ctx.reply('Бот запущен', {
+// 		parse_mode: 'HTML'
+// 	})
+// });
 
 // bot.command('support', async (ctx) => {
 // 	await ctx.reply('Ваш запрос принят, пожалуйста, ожидайте - тех. поддержка скоро свяжется с Вами')
@@ -79,12 +77,29 @@ bot.command('start', async (ctx) => {
 // 	})
 // });
 
-// bot.command('inline_keyboard', async (ctx) => {
-// 	const inlineKeyboard = new InlineKeyboard().text('1', 'button-1').text('2', 'button-3').text('3', 'button-3')
-// 	await ctx.reply('Нажмите кнопку', {
-// 		reply_markup: inlineKeyboard
-// 	})
-// });
+bot.command('inline_keyboard', async (ctx) => {
+	const inlineKeyboard = new InlineKeyboard().text('1', 'button-1').text('2', 'button-3').text('3', 'button-3')
+	await ctx.reply('Нажмите кнопку', {
+		reply_markup: inlineKeyboard
+	})
+});
+
+// Вариант колбека но уже попизже
+
+bot.on('callback_query:data', async (ctx) => {
+	await ctx.answerCallbackQuery();
+	await ctx.reply(`Вы выбрали кнопку: ${ctx.callbackQuery.data}`);
+});
+
+//Вешаем колбэкквери на ответ по кнопкам
+// Вариант не самый лучший
+
+// bot.callbackQuery(['button-1', 'button-2', 'button-3'], async (ctx) => {
+// 	await ctx.answerCallbackQuery('Выбор подтверждён!');
+// 	await ctx.reply('Вы выбрали цифру')
+// })
+
+
 
 // Вешаем слушателя на любые другие сообщения
 
