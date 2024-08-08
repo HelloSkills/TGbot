@@ -78,18 +78,29 @@ bot.command('start', async (ctx) => {
 // });
 
 bot.command('inline_keyboard', async (ctx) => {
-	const inlineKeyboard = new InlineKeyboard().text('1', 'button-1').text('2', 'button-3').text('3', 'button-3')
+	const inlineKeyboard = new InlineKeyboard().text('1', 'button-1').text('2', 'button-2').text('3', 'button-3')
 	await ctx.reply('Нажмите кнопку', {
 		reply_markup: inlineKeyboard
 	})
 });
 
+// bot.callbackQuery(/button-1-3/, async (ctx) => {
+// 	await ctx.answerCallbackQuery();
+// 	await ctx.reply(`Вы выбрали кнопку: ${ctx.callbackQuery.data}`);
+// });
+
+bot.callbackQuery(/button-[1-3]/, async (ctx) => {
+	await ctx.answerCallbackQuery('Выбор подтверждён!');
+	await ctx.reply(`Вы выбрали кнопку: ${ctx.callbackQuery.data}`)
+})
 // Вариант колбека но уже попизже
 
-bot.on('callback_query:data', async (ctx) => {
-	await ctx.answerCallbackQuery();
-	await ctx.reply(`Вы выбрали кнопку: ${ctx.callbackQuery.data}`);
-});
+// bot.on('callback_query:data', async (ctx) => {
+// 	await ctx.answerCallbackQuery();
+// 	await ctx.reply(`Вы выбрали кнопку: ${ctx.callbackQuery.data}`);
+// });
+
+
 
 //Вешаем колбэкквери на ответ по кнопкам
 // Вариант не самый лучший
