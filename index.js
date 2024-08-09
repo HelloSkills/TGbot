@@ -1,7 +1,9 @@
 // Соединяем бота
 require('dotenv').config();
 const { Bot, GrammyError, HttpError, Keyboard, InlineKeyboard } = require('grammy');
+const { hydrate } = require('@grammyjs/hydrate');
 const bot = new Bot(process.env.BOT_API_KEY);
+bot.use(hydrate());
 
 // Вешаем команды и их описание
 
@@ -13,25 +15,9 @@ bot.api.setMyCommands([
 		description: 'Старт бота',
 	},
 	{
-		command: 'inline_keyboard',
-		description: 'Клавиатура',
+		command: 'menu',
+		description: 'Меню бота',
 	}
-	// {
-	// 	command: 'support',
-	// 	description: 'Необходима помощь сотрудника тех. поддержки',
-	// },
-	// {
-	// 	command: 'id',
-	// 	description: 'Узнать свой ID Telegram',
-	// },
-	// {
-	// 	command: 'contact',
-	// 	description: 'Отправить Ваш контакт',
-	// },
-	// {
-	// 	command: 'location',
-	// 	description: 'Отправить Вашу локацию',
-	// },
 ])
 
 
@@ -44,115 +30,38 @@ bot.command('start', async (ctx) => {
 	})
 });
 
+const menuKeyboard = new InlineKeyboard()
+	.text('Узнать статус заказа', 'order-status')
+	.text('Обратиться в поддержку', 'support')
 
-// bot.command('start', async (ctx) => {
-// 	await ctx.react("❤")
-// 	await ctx.reply('Бот запущен', {
-// 		parse_mode: 'HTML'
-// 	})
-// });
+const backKeyboard = new InlineKeyboard().text('< Назад в меню', 'back')
 
-// bot.command('support', async (ctx) => {
-// 	await ctx.reply('Ваш запрос принят, пожалуйста, ожидайте - тех. поддержка скоро свяжется с Вами')
-// });
+bot.command('menu', async (ctx) => {
+	await ctx.reply('Выберите пункт меню', {
+		reply_markup: menuKeyboard,
+	});
+});
 
-// bot.command('id', async (ctx) => {
-// 	await ctx.reply(`Ваш ID <b><span class="tg-spoiler">${ctx.from.id}</span></b>`, {
-// 		parse_mode: 'HTML'
-// 		// parse_mode: 'MarkdownV2' *жирный*
-// 	})
-// });
-
-// bot.command('contact', async (ctx) => {
-// 	const shareKeyboard = new Keyboard().requestContact('Контакт').resized().oneTime().placeholder('Нажмите кнопку')
-// 	await ctx.reply('Если хотите отправить Ваш контакт - нажмите кнопку', {
-// 		reply_markup: shareKeyboard
-// 	})
-// });
-
-// bot.command('location', async (ctx) => {
-// 	const shareKeyboard = new Keyboard().requestLocation('Локация').resized().oneTime().placeholder('Нажмите кнопку')
-// 	await ctx.reply('Если хотите отправить Вашу локацию - нажмите кнопку', {
-// 		reply_markup: shareKeyboard
-// 	})
-// });
-
-bot.command('inline_keyboard', async (ctx) => {
-	const inlineKeyboard = new InlineKeyboard().text('1', 'button-1').text('2', 'button-2').text('3', 'button-3')
-	await ctx.reply('Нажмите кнопку', {
-		reply_markup: inlineKeyboard
+bot.callbackQuery('order-status', async (ctx) => {
+	await ctx.callbackQuery.message.editText('Статус заказа: в пути', {
+		reply_markup: backKeyboard,
 	})
-});
-
-// bot.callbackQuery(/button-1-3/, async (ctx) => {
-// 	await ctx.answerCallbackQuery();
-// 	await ctx.reply(`Вы выбрали кнопку: ${ctx.callbackQuery.data}`);
-// });
-
-bot.callbackQuery(/button-[1-3]/, async (ctx) => {
-	await ctx.answerCallbackQuery('Выбор подтверждён!');
-	await ctx.reply(`Вы выбрали кнопку: ${ctx.callbackQuery.data}`)
+	await ctx.answerCallbackQuery();
 })
-// Вариант колбека но уже попизже
 
-// bot.on('callback_query:data', async (ctx) => {
-// 	await ctx.answerCallbackQuery();
-// 	await ctx.reply(`Вы выбрали кнопку: ${ctx.callbackQuery.data}`);
-// });
+bot.callbackQuery('support', async (ctx) => {
+	await ctx.callbackQuery.message.editText('Напишите Ваш запрос', {
+		reply_markup: backKeyboard,
+	})
+	await ctx.answerCallbackQuery();
+})
 
-
-
-//Вешаем колбэкквери на ответ по кнопкам
-// Вариант не самый лучший
-
-// bot.callbackQuery(['button-1', 'button-2', 'button-3'], async (ctx) => {
-// 	await ctx.answerCallbackQuery('Выбор подтверждён!');
-// 	await ctx.reply('Вы выбрали цифру')
-// })
-
-
-
-// Вешаем слушателя на любые другие сообщения
-
-// Полный лог информации
-
-bot.on('msg', async (ctx) => {
-	console.log(ctx.msg);
-	await ctx.reply(ctx.msg)
-});
-
-
-// Обработчик контакта
-
-// bot.on('msg', async (ctx) => {
-// 	// Ловим контакт в лог
-
-// 	console.log(ctx.msg.contact);
-// 	await ctx.reply(`Спасибо, мы получили Ваш контакт ` + `+` + ctx.msg.contact.phone_number)
-// });
-
-// // Обработчик для локации
-
-// bot.on('msg', async (ctx) => {
-// 	// Ловим контакт в лог
-// 	console.log(ctx.msg.location);
-// 	await ctx.reply(`Спасибо, мы получили Вашу локацию ` `latitude: ` + ctx.msg.location.latitude + `, longitude:` + ctx.msg.location.longitude)
-// });
-
-// bot.on('message', async (ctx) => {
-// 	console.log(ctx.msg)
-// 	if (ctx.message.contact) {
-// 		await ctx.react("❤")
-// 		await ctx.reply(`Спасибо, мы получили Ваш контакт ` + `+` + ctx.msg.contact.phone_number)
-// 	} else if (ctx.message.location) {
-// 		await ctx.react("❤")
-// 		await ctx.reply(`Спасибо, мы получили Вашу локацию - ` + `Latitude: ` + ctx.msg.location.latitude + `, Longitude:` + ctx.msg.location.longitude)
-
-// 	} else {
-// 		await ctx.react("🥴")
-// 		await ctx.reply('Такой команды нет, соболезную :\'\(')
-// 	}
-// });
+bot.callbackQuery('back', async (ctx) => {
+	await ctx.callbackQuery.message.editText('Выберите пункт меню', {
+		reply_markup: menuKeyboard,
+	})
+	await ctx.answerCallbackQuery();
+})
 
 
 // Обработчик ошибок
@@ -218,4 +127,10 @@ bot.start();
 // })
 
 
+// fetch('https://jsonplaceholder.typicode.com/todos/1')
+// 	.then((data) => {
+// 		return data.json();
+// 	}).then((info) => {
+// 		console.log(info)
+// 	})
 
